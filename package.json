@@ -5,7 +5,7 @@
   "scripts": {
     "start": "node ./bin/www",
     "dev": "DEBUG=* nodemon ./bin/www",
-    "test": "mocha"
+    "test": "mocha --recursive"
   },
   "dependencies": {
     "body-parser": "~1.18.2",
