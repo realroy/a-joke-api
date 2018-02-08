@@ -1,18 +1,19 @@
 version: 2
 jobs:
   build:
-    - image: circleci/node:9.5.0
-    - image: circleci/mongo:3.4.4
-  working_directory: ~/repo
-  steps:
-    - checkout
-    - restore_cache:
-        keys:
-          - v1-dependencies-{{ checksum "package.json" }}
-          - v1-dependencies-
-    - run: npm install
-    - save_cache:
-        paths:
-          - node_modules
-        key: v1-dependencies={{ checksum "package.json" }}
-    - run: npm test
+    docker:
+      - image: circleci/node:9.5.0
+      - image: circleci/mongo:3.4.4
+    working_directory: ~/repo
+    steps:
+      - checkout
+      - restore_cache:
+          keys:
+            - v1-dependencies-{{ checksum "package.json" }}
+            - v1-dependencies-
+      - run: npm install
+      - save_cache:
+          paths:
+            - node_modules
+          key: v1-dependencies={{ checksum "package.json" }}
+      - run: npm test
