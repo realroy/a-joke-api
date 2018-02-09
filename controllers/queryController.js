@@ -3,7 +3,7 @@ const mongoose = require("mongoose");
 const schema = mongoose.Schema({
   categories: {
     type: [String],
-    default: "Unknown",
+    default: ["Unknown"],
     enum: ["Unknown", "explicit", "nerdy"]
   },
   jokeId: { type: Number, min: 0 },
