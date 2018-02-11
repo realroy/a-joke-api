@@ -1,13 +1,23 @@
-const mongoose = require("mongoose");
-require("dotenv").config();
+const mongoose = require('mongoose')
+const debug = require('debug')('db:index')
+require('dotenv').config()
 
-const getDbURL = env =>
-  env === 'production' ? '' : `mongodb://172.17.0.2:27017/${env}`
+const getDbURL = (env) => {
+	switch (env.NODE_ENV) {
+	case 'production':
+		return env.DB_PROD_URL
+	case 'development':
+		return env.DB_DEV_URL
+	case 'test':
+		return env.DB_TEST_URL
+	default:
+		return ''
+	}
+}
 
 module.exports = () => {
-  const url = getDbURL(process.env)
-  const connection = mongoose.createConnection(url)
-  connection.on('error', console.error)
-  connection.once('open', () => console.log('Estrablish DB complete!'))
-  return connection
-};
+	const url = getDbURL(process.env)
+	mongoose.Promise = global.Promise
+	mongoose.connect(url)
+	return mongoose.connection
+}

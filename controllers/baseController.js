@@ -1,16 +1,15 @@
 'use strict'
 
-const debug = require('debug')('query:controller')
+const debug = require('debug')('base:controller')
 
-const Query = require('../models/query')
-
-function QueryController() {
+module.exports = function BaseControlle(model) {
+	this.Model = model
 	const formatJSON = async (errors = [], values = []) => {
 		try {
-			const totalQuery = await Query.count()
-			return { errors, values, total_query: totalQuery }
+			const total = await this.Model.count()
+			return { errors, values, total }
 		} catch (error) {
-			return { errors, values, total_query: 0 }
+			return { errors, values, total: 0 }
 		}
 	}
 	const handleError = async (res, error) => {
@@ -19,7 +18,7 @@ function QueryController() {
 	}
 	this.index = async (req, res) => {
 		try {
-			const values = await Query.find()
+			const values = await this.Model.find()
 			const json = await formatJSON(null, values)
 			res.status(200).json(json)
 		} catch (error) {
@@ -36,7 +35,7 @@ function QueryController() {
 					? req.body.categories.map(c => (c === '' ? 'Unknown' : c))
 					: undefined
 			}
-			const value = new Query(values)
+			const value = new this.Model(values)
 			await value.save()
 			const json = await formatJSON(null, value)
 			res.status(200).json(json)
@@ -46,7 +45,7 @@ function QueryController() {
 	}
 	this.read = async (req, res) => {
 		try {
-			const query = await Query.findById(req.params.id)
+			const query = await this.Model.findById(req.params.id)
 			const json = await formatJSON(null, value)
 			res.status(200).json(json)
 		} catch (error) {
@@ -55,8 +54,8 @@ function QueryController() {
 	}
 	this.update = async (req, res) => {
 		try {
-			await Query.findByIdAndUpdate(req.params.id, req.body)
-			const query = await Query.findById(req.params.id)
+			await this.Model.findByIdAndUpdate(req.params.id, req.body)
+			const query = await this.Model.findById(req.params.id)
 			const json = await formatJSON(null, query)
 			res.status(200).json(json)
 		} catch (error) {
@@ -65,7 +64,7 @@ function QueryController() {
 	}
 	this.delete = async (req, res) => {
 		try {
-			const query = await Query.findByIdAndRemove(req.params.id)
+			const query = await this.Model.findByIdAndRemove(req.params.id)
 			const json = await formatJSON(null, value)
 			res.status(200).json(json)
 		} catch (error) {
@@ -73,5 +72,3 @@ function QueryController() {
 		}
 	}
 }
-
-module.exports = QueryController
