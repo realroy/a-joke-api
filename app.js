@@ -2,16 +2,15 @@ const express = require('express')
 const logger = require('morgan')
 const bodyParser = require('body-parser')
 
-const connection = require('./db')()
-
 const names = require('./routes/names')
 const index = require('./routes/index')
 const queries = require('./routes/queries')
+const categories = require('./routes/categories')
+const ids = require('./routes/ids')
+const dates = require('./routes/dates')
 
 const app = express()
 
-// uncomment after placing your favicon in /public
-//app.use(favicon(path.join(__dirname, 'public', 'favicon.ico')));
 app.use(logger('dev'))
 app.use(bodyParser.json())
 app.use(bodyParser.urlencoded({ extended: false }))
@@ -19,6 +18,10 @@ app.use(bodyParser.urlencoded({ extended: false }))
 app.use('/', index)
 app.use('/queries', queries)
 app.use('/names', names)
+app.use('/categories', categories)
+app.use('/ids', ids)
+app.use('/dates', dates)
+
 // catch 404 and forward to error handler
 app.use(function(req, res, next) {
 	var err = new Error('Not Found')
