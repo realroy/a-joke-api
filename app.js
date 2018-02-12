@@ -2,12 +2,8 @@ const express = require('express')
 const logger = require('morgan')
 const bodyParser = require('body-parser')
 
-const names = require('./routes/names')
 const index = require('./routes/index')
 const queries = require('./routes/queries')
-const categories = require('./routes/categories')
-const ids = require('./routes/ids')
-const dates = require('./routes/dates')
 
 const app = express()
 
@@ -17,10 +13,6 @@ app.use(bodyParser.urlencoded({ extended: false }))
 
 app.use('/', index)
 app.use('/queries', queries)
-app.use('/names', names)
-app.use('/categories', categories)
-app.use('/ids', ids)
-app.use('/dates', dates)
 
 // catch 404 and forward to error handler
 app.use(function(req, res, next) {

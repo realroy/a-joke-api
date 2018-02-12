@@ -1,23 +1,18 @@
 const debug = require('debug')('controller:categories')
 const Query = require('../models/query')
-const { formatJSON, handleError, handleSort } = require('./helpers')
+const { handleResponse, handleError, handleSort, withModel } = require('./helpers')
 
-function categoriesController() {
-  const Model = Query
+module.exports = withModel(Query, function () {
 	this.index = async function(req, res, next) {
 		try {
-			const values = await Model.aggregate([
+			const values = await this.Model.aggregate([
         { $unwind: '$categories' },
 				{ $group: { _id: '$categories', count: { $sum: 1 } } },
 				{ $sort: { count: handleSort(req.query) }},
-      ])
-      console.log(values)
-			const json = await formatJSON(null, values, Model)
-			res.status(200).json(json)
+			])
+			handleResponse(res, values, this.Model)
 		} catch (error) {
 			handleError(res, error)
 		}
 	}
-}
-
-module.exports = categoriesController
+})

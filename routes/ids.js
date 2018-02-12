@@ -1,6 +1,6 @@
 const route = require('express').Router()
 
-const IdController = require('../controllers/IdController')
+const IdController = require('../controllers/idController')
 
 const c = new IdController()
 

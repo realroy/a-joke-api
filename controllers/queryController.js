@@ -65,8 +65,8 @@ function QueryController() {
 	}
 	this.delete = async (req, res) => {
 		try {
-			const query = await Query.findByIdAndRemove(req.params.id)
-			const json = await formatJSON(null, value)
+			await Query.findByIdAndRemove(req.params.id)
+			const json = await formatJSON(null, [])
 			res.status(200).json(json)
 		} catch (error) {
 			handleError(res, error)
