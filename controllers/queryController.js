@@ -1,77 +1,86 @@
-'use strict'
-
 const debug = require('debug')('query:controller')
 
 const Query = require('../models/query')
+const BaseController = require('../controllers/baseController')
+const { sortAggregater, groupAggregater } = require('./helpers')
 
-function QueryController() {
-	const formatJSON = async (errors = [], values = []) => {
-		try {
-			const totalQuery = await Query.count()
-			return { errors, values, total_query: totalQuery }
-		} catch (error) {
-			return { errors, values, total_query: 0 }
+module.exports = class QueryController extends BaseController {
+	constructor() {
+		super(Query)
+		this.router
+			.get('/', this.index())
+			.post('/', this.create())
+			.get('/:id', this.read())
+			.put('/:id', this.update())
+			.delete('/:id', this.delete())
+	}
+
+	validateReqBody({ name, jokeId, num, categories }) {
+		console.log(categories)
+		return {
+			name,
+			jokeId: jokeId,
+			num: jokeId >= 1 ? 0 : num,
+			categories: Array.isArray(categories)
+				? categories.map(c => (c === '' ? 'Unknown' : c))
+				: undefined
 		}
 	}
-	const handleError = async (res, error) => {
-		const json = await formatJSON(error, null)
-		res.status(500).json(json)
-	}
-	this.index = async (req, res) => {
-		try {
-			const values = await Query.find()
-			const json = await formatJSON(null, values)
-			res.status(200).json(json)
-		} catch (error) {
-			handleError(res, error)
-		}
-	}
-	this.create = async (req, res) => {
-		try {
-			const values = {
-				name: req.body.name,
-				jokeId: req.body.jokeId,
-				num: req.body.jokeId >= 1 ? 0 : req.body.num,
-				categories: Array.isArray(req.body.categories)
-					? req.body.categories.map(c => (c === '' ? 'Unknown' : c))
-					: undefined
+
+	index() {
+		return async (req, res) => {
+			try {
+				const values = (Object.keys(req.query).length === 0)
+				? await this.Model.find()
+				: await this.Model.aggregate([
+					...groupAggregater(req.query),
+					...sortAggregater(req.query)
+				])
+				super.handleResponse(res, values)
+			} catch (error) {
+				super.handleError(res, error)
 			}
-			const value = new Query(values)
-			await value.save()
-			const json = await formatJSON(null, value)
-			res.status(200).json(json)
-		} catch (error) {
-			handleError(res, error)
 		}
 	}
-	this.read = async (req, res) => {
-		try {
-			const query = await Query.findById(req.params.id)
-			const json = await formatJSON(null, value)
-			res.status(200).json(json)
-		} catch (error) {
-			handleError(res, error)
+	create() {
+		return async (req, res) => {
+			try {
+				const values = this.validateReqBody(req.body)
+				const value = await new this.Model(values).save()
+				super.handleResponse(res, value)
+			} catch (error) {
+				super.handleError(res, error)
+			}
 		}
 	}
-	this.update = async (req, res) => {
-		try {
-			await Query.findByIdAndUpdate(req.params.id, req.body)
-			const query = await Query.findById(req.params.id)
-			const json = await formatJSON(null, query)
-			res.status(200).json(json)
-		} catch (error) {
-			handleError(res, error)
+	read() {
+		return async (req, res) => {
+			try {
+				const value = await this.Model.findById(req.params.id)
+				super.handleResponse(res, value)
+			} catch (error) {
+				super.handleError(res, error)
+			}
 		}
 	}
-	this.delete = async (req, res) => {
-		try {
-			await Query.findByIdAndRemove(req.params.id)
-			const json = await formatJSON(null, [])
-			res.status(200).json(json)
-		} catch (error) {
-			handleError(res, error)
+	update() {
+		return async (req, res) => {
+			try {
+				const value = await this.Model.findByIdAndUpdate(req.params.id, req.body)
+				super.handleResponse(res, value)
+			} catch (error) {
+				super.handleError(res, error)
+			}
+		}
+	}
+	delete() {
+		return async (req, res) => {
+			try {
+				await this.Model.findByIdAndRemove(req.params.id)
+				super.handleResponse(res, [])
+			} catch (error) {
+				super.handleError(res, error)
+			}
 		}
 	}
 }
-
-module.exports = QueryController

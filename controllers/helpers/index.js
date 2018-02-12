@@ -21,13 +21,33 @@ async function handleError(res, error) {
 	res.status(500).json(json)
 }
 
-function handleSort(query) {
-	if (!query['sort_by']) return -1
-	return ['ascending', 'asc', '1'].includes(query['sort_by']) ? 1 : -1
+function sortAggregater(query) {
+	let count = -1
+	if (query['sort_by']) {
+		count = ['ascending', 'asc', '1'].includes(query['sort_by']) ? 1 : -1
+	}
+	return [{ $sort: { count } }]
+}
+
+function groupAggregater(query) {
+	if(!query['group_by']) return [{}]
+	if(query['group_by'] === 'categories') {
+		return [
+			...unwindAggregater(query['group_by']),
+			{ $group: { _id: '$'.concat(query['group_by']), count: { $sum: 1 } } }
+		]
+	}
+	return [{ $group: { _id: '$'.concat(query['group_by']), count: { $sum: 1 } } }]
+}
+
+function unwindAggregater(attribute) {
+	return [{ $unwind: '$'.concat(attribute) }]
 }
 
 exports.formatJSON = formatJSON
 exports.handleError = handleError
 exports.handleResponse = handleResponse
-exports.handleSort = handleSort
+exports.sortAggregater = sortAggregater
+exports.groupAggregater = groupAggregater
+exports.unwindAggregater = unwindAggregater
 exports.withModel = withModel
